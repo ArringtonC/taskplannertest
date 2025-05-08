@@ -1,0 +1,7 @@
+- Standardized all backend task responses to use _id instead of id, ensuring consistent task identification for the frontend.
+- Normalized all tasks in the frontend after fetching, so every task object always has an _id property (using id as fallback if present).
+- Fixed the bug where handleDeleteTask was called with undefined due to some tasks having id instead of _id.
+- Added debug logging to TaskRow to trace task object structure and identify the root cause of the delete bug.
+- Ensured all delete handlers and props across components expect and use a string _id, not a Task object or undefined.
+- Confirmed the delete flow is now robust and error-free for both mock DB and real backend.
+- Prepared the codebase for further UI/UX improvements, such as fixing the Edit Task popup. 

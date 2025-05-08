@@ -1,0 +1,396 @@
+Main Page Summary
+=================
+
+The user began by asking to run the frontend build (`npm run build`), which failed due to missing React type definitions and implicit any errors. The assistant guided the user to install `@types/react` and `@types/react-dom`, but subsequent builds revealed missing Radix UI and aliased import issues (e.g., `@/lib/utils`, `@/components/ui/button`). The assistant diagnosed the alias setup, found missing files, and created or copied necessary files (like `utils.ts`, `button.tsx`, etc.) to match the alias structure. The assistant also created placeholder hooks (e.g., `use-toast`) and utility functions (`cn`).
+
+After installing all required third-party packages (Radix UI, class-variance-authority, etc.), the assistant updated the TypeScript config (`tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`) to ensure path aliases were recognized by both TypeScript and Vite. The build errors shifted to code-level issues, such as missing or incorrect properties in components and destructuring errors in the placeholder `useToast` implementation. The assistant provided fixes for these, including removing unsupported props and updating placeholder data.
+
+The frontend build eventually succeeded after all alias, dependency, and code issues were resolved. The user then asked about building the backend, which only runs `npm install --production` as its build step. The install process was repeatedly interrupted (exit code 130, `^C`), and the assistant suggested letting it run to completion, running with `--verbose`, or doing a clean install. Each attempt was canceled before completion, so no backend build issues were fully diagnosed.
+
+The user then provided a table layout and asked for it to be reviewed and added to the main page. The assistant ensured all Tailwind CSS classes were applied as specified and updated `Index.tsx` to include the table. The user also requested the addition of a base button component (`button.tsx`), which was already present, and then asked for a specific button to be added to the main page, which the assistant did.
+
+Next, the user asked to update all base buttons on the main page, Dependency Graph, and Monthly Mapper to use a standardized set of props (`variant="outline"`, `size="sm"`, and specific Tailwind classes). The assistant updated all relevant button usages in these files.
+
+The user then provided a step-by-step guide for building a Task Planner Dashboard, including type definitions, main page/component structure, CRUD handlers, and UI layout. The assistant reviewed the guide, provided a checklist for each step, and offered to generate or review code for any step as needed.
+
+Throughout, the assistant ensured all code changes were consistent, followed best practices, and used the base Button component for UI consistency. The conversation covered troubleshooting build issues, refactoring for alias and dependency correctness, and implementing a scalable, maintainable UI architecture for a task planner application.
+
+
+Task Planner Dashboard Build Steps
+==================================
+
+Step 1: Define the Task Interface
+[ ] Create src/types/task.ts with the provided Task interface.
+[ ] Make sure all components use this type for task data.
+
+// src/types/task.ts
+export interface Task {
+  id: string;
+  title: string;
+  description: string;
+  status: 'todo' | 'in-progress' | 'done';
+  priority: 'low' | 'medium' | 'high';
+  complexity: number;
+  dueDate?: string;
+}
+
+Step 2: Create the Main Dashboard Page
+[ ] Create src/pages/Index.tsx.
+[ ] Import all required components and hooks.
+[ ] Define initialTasks as an array of Task.
+[ ] Implement state for tasks, view, isFormOpen, and editingTask.
+[ ] Add handler functions for CRUD operations (add, edit, delete, save).
+[ ] Render the main layout, header, view toggle, add button, table/cards, navigation, and modal.
+
+Step 3: Create the Task Table Component
+[ ] Create src/components/TaskTable.tsx.
+[ ] Accept tasks, onEdit, and onDelete as props.
+[ ] Render a table with headers and rows for each task.
+[ ] Use the Button component for actions (edit/delete).
+[ ] Add helper functions for status colors, etc.
+
+Step 4: Create the Task Cards Component
+[ ] Create src/components/TaskCards.tsx.
+[ ] Accept tasks, onEdit, and onDelete as props.
+[ ] Render a grid of cards, one for each task.
+[ ] Use the Button component for actions.
+
+Step 5: Create the Task Form Component
+[ ] Create src/components/TaskForm.tsx.
+[ ] Accept isOpen, onClose, onSave, and editingTask as props.
+[ ] Use a dialog/modal for the form.
+[ ] Implement form state, validation, and submission logic.
+[ ] Use the Button component for form actions.
+
+Step 6: Implement CRUD Operations
+[ ] In Index.tsx, implement handlers for add, edit, delete, and save.
+[ ] Use toast for user feedback on actions.
+
+Step 7: Build the UI Components
+[ ] In Index.tsx, build the full UI:
+    Header with title and task count.
+    View toggle and add task button.
+    Table/cards container.
+    Navigation buttons.
+    Task form modal.
+
+Step 8: Enhance TaskTable Component
+[ ] Style the table with Tailwind CSS.
+[ ] Add columns for title, status, priority, complexity, due date, and actions.
+[ ] Map through tasks to render each row.
+
+Step 9: Add Navigation and Integration
+[ ] In src/App.tsx, set up routing with react-router-dom.
+[ ] Add a route for the dashboard (/) and any other pages.
+
+Step 10: Implement Task Form UI
+[ ] Style the form with Tailwind CSS.
+[ ] Add fields for all task properties.
+[ ] Add validation and error handling.
+[ ] Use dialog header, title, and footer for a polished look.
+
+Step-by-Step Guide to Create a Task Planner Dashboard
+====================================================
+
+Step 1: Define the Task Interface
+First, you need a data structure for your tasks:
+
+// src/types/task.ts
+export interface Task {
+  id: string;
+  title: string;
+  status: string;
+  priority: string;
+  complexity: {
+    score: number;
+    level: string;
+    emoji: string;
+  };
+  dueDate: string | null;
+}
+
+Step 2: Create the Main Dashboard Page
+Create your main page component:
+
+// src/pages/Index.tsx
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { PlusIcon } from "lucide-react";
+import { Task } from "@/types/task";
+import TaskTable from "@/components/TaskTable";
+import TaskCards from "@/components/TaskCards";
+import TaskForm from "@/components/TaskForm";
+import { toast } from "sonner";
+
+// Define initial sample tasks
+const initialTasks: Task[] = [
+  // Add some sample tasks here
+];
+
+const Index = () => {
+  const navigate = useNavigate();
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [view, setView] = useState<"table" | "cards">("table");
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
+
+  // Add handler functions for CRUD operations
+  
+  return (
+    <div className="min-h-screen bg-gray-900 text-white">
+      <div className="max-w-7xl w-full mx-auto px-4 py-8">
+        {/* Header with title and task count */}
+        
+        {/* View toggle and Add Task button */}
+        
+        {/* Table/Cards container */}
+        
+        {/* Navigation buttons */}
+        
+        {/* Task form modal */}
+      </div>
+    </div>
+  );
+};
+
+Step 3: Create the Task Table Component
+For displaying tasks in a table format:
+
+// src/components/TaskTable.tsx
+import React from "react";
+import { Task } from "@/types/task";
+import { Edit, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+interface TaskTableProps {
+  tasks: Task[];
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+}
+
+export default function TaskTable({ tasks, onEdit, onDelete }: TaskTableProps) {
+  // Add helper functions for status colors, etc.
+  
+  return (
+    <div className="w-full overflow-x-auto">
+      <table className="w-full text-left">
+        <thead>
+          {/* Table header row */}
+        </thead>
+        <tbody>
+          {/* Map through tasks and create rows */}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+Step 4: Create the Task Cards Component
+For displaying tasks in card format:
+
+// src/components/TaskCards.tsx
+import React from "react";
+import { Task } from "@/types/task";
+
+interface TaskCardsProps {
+  tasks: Task[];
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+}
+
+export default function TaskCards({ tasks, onEdit, onDelete }: TaskCardsProps) {
+  // Add helper functions
+  
+  return (
+    <div className="w-full">
+      {/* Implement card grid layout */}
+    </div>
+  );
+}
+
+Step 5: Create the Task Form Component
+For adding and editing tasks:
+
+// src/components/TaskForm.tsx
+import React, { useState, useEffect } from "react";
+import { Task } from "@/types/task";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+// Other import statements
+
+interface TaskFormProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (task: Omit<Task, "id">) => void;
+  editingTask?: Task;
+}
+
+export default function TaskForm({ isOpen, onClose, onSave, editingTask }: TaskFormProps) {
+  // Form state and submission logic
+  
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="bg-gray-800 text-white">
+        {/* Form fields */}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+Step 6: Implement CRUD Operations
+In your Index.tsx file:
+
+// Add task handler
+const handleAddTask = () => {
+  setEditingTask(undefined);
+  setIsFormOpen(true);
+};
+
+// Edit task handler
+const handleEditTask = (id: string) => {
+  const task = tasks.find(t => t.id === id);
+  if (task) {
+    setEditingTask(task);
+    setIsFormOpen(true);
+  }
+};
+
+// Delete task handler
+const handleDeleteTask = (id: string) => {
+  setTasks(tasks.filter(task => task.id !== id));
+  toast.success("Task deleted successfully");
+};
+
+// Save task handler
+const handleSaveTask = (taskData: Omit<Task, "id">) => {
+  if (editingTask) {
+    // Update existing task
+    setTasks(tasks.map(task => 
+      task.id === editingTask.id ? { ...taskData, id: task.id } : task
+    ));
+    toast.success("Task updated successfully");
+  } else {
+    // Add new task
+    const newTask: Task = {
+      ...taskData,
+      id: Date.now().toString()
+    };
+    setTasks([...tasks, newTask]);
+    toast.success("Task created successfully");
+  }
+  
+  setIsFormOpen(false);
+};
+
+Step 7: Build the UI Components
+Complete the UI for your Index.tsx:
+
+return (
+  <div className="min-h-screen bg-gray-900 text-white flex flex-col">
+    <div className="max-w-7xl w-full mx-auto px-4 py-8">
+      <h1 className="text-5xl font-bold text-center mb-6">Task Planner Dashboard</h1>
+      
+      <div className="text-center mb-8">
+        <p className="text-xl text-gray-300">{tasks.length} tasks total</p>
+      </div>
+      
+      <div className="flex justify-center mb-6">
+        <div className="inline-flex rounded-md bg-gray-800 p-1">
+          {/* View toggle buttons */}
+          <Button
+            onClick={handleAddTask}
+            className="bg-blue-600 hover:bg-blue-700 text-white ml-2"
+          >
+            <PlusIcon className="h-4 w-4 mr-1" />
+            Add Task
+          </Button>
+        </div>
+      </div>
+      
+      <div className="border-t border-b border-gray-700 py-6">
+        {/* Task display (table or cards) */}
+      </div>
+      
+      <div className="flex justify-center gap-4 mt-8">
+        {/* Navigation buttons */}
+      </div>
+      
+      {/* Task form */}
+      <TaskForm 
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        onSave={handleSaveTask}
+        editingTask={editingTask}
+      />
+    </div>
+  </div>
+);
+
+Step 8: Enhance TaskTable Component
+Complete the table component with proper styling:
+
+return (
+  <div className="w-full overflow-x-auto">
+    <table className="w-full text-left">
+      <thead>
+        <tr className="border-b border-gray-700">
+          <th className="py-4 px-2 text-gray-200 font-semibold tracking-wide">TITLE</th>
+          <th className="py-4 px-2 text-gray-200 font-semibold tracking-wide">STATUS</th>
+          <th className="py-4 px-2 text-gray-200 font-semibold tracking-wide">PRIORITY</th>
+          <th className="py-4 px-2 text-gray-200 font-semibold tracking-wide">COMPLEXITY</th>
+          <th className="py-4 px-2 text-gray-200 font-semibold tracking-wide">DUE DATE</th>
+          <th className="py-4 px-2 text-gray-200 font-semibold tracking-wide">ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody>
+        {tasks.map((task) => (
+          <tr key={task.id} className="border-b border-gray-800">
+            {/* Table cell contents */}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
+
+Step 9: Add Navigation and Integration
+Make sure your component is properly integrated with your application's routing:
+
+// src/App.tsx
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Index from "./pages/Index";
+// Other imports
+
+const App = () => (
+  <BrowserRouter>
+    <Routes>
+      <Route path="/" element={<Index />} />
+      {/* Other routes */}
+    </Routes>
+  </BrowserRouter>
+);
+
+Step 10: Implement Task Form UI
+Complete the task form with proper styling and validation:
+
+return (
+  <Dialog open={isOpen} onOpenChange={onClose}>
+    <DialogContent className="bg-[#0f111a] text-white border-gray-800">
+      <DialogHeader>
+        <DialogTitle className="text-2xl font-bold text-center">
+          {editingTask ? "Edit Task" : "Create New Task"}
+        </DialogTitle>
+      </DialogHeader>
+      
+      <form onSubmit={handleSubmit}>
+        <div className="grid gap-4 py-4">
+          {/* Form field components */}
+        </div>
+        <DialogFooter>
+          {/* Form buttons */}
+        </DialogFooter>
+      </form>
+    </DialogContent>
+  </Dialog>
+); 

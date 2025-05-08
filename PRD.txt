@@ -1,0 +1,184 @@
+# Product Requirements Document (PRD)
+
+## Product Name
+TaskMapper
+
+## Vision
+TaskMapper is a web application that helps users visualize, assess, break down, and re-schedule their tasks. The goal is to enable 90%-accuracy in planning and execution, prioritizing actionable, good-enough steps over high-precision or perfect decisions.
+
+## Core Features (MVP)
+
+### UI/UX & Frontend
+- Scaffold a React application using Tailwind CSS and React Router.
+- Design rough wireframes for all pages.
+- **Dashboard Page:**
+  - Display all tasks in a table or card view.
+  - Allow users to add, edit, and delete tasks (fields: title, complexity, due date).
+  - Provide a "Next" button to navigate to the Monthly Mapper.
+- **Monthly Mapper Page:**
+  - Show a 12-month calendar grid.
+  - Place tasks by due month (using seed data).
+  - Highlight overloaded months (threshold: more than 4 tasks).
+  - Provide "Analyze Size" and "Back" buttons.
+
+### State Management
+- Use React Context and useReducer for global task state management.
+
+### Backend & API
+- Scaffold a Node.js/Express backend.
+- Define a Task model with fields: id, title, complexity (1–8), dueDate, parentId.
+- Implement RESTful CRUD endpoints (Create, Read, Update, Delete).
+- Add validation for complexity (1–8) and ISO date format.
+- Connect to MongoDB or PostgreSQL for data persistence.
+
+### Data & Testing
+- Create a sample data seed script (~10 tasks across months and complexity levels).
+- Write unit tests for:
+  - Task complexity-splitting logic
+  - Monthly grouping (calendar placement) logic
+
+### Documentation
+- Update README with setup and run instructions ("git clone → npm install → npm run dev").
+
+---
+
+## Phase 2 (Stub/Defer)
+
+- **Complexity Checker Page:**
+  - List tasks by complexity.
+  - Allow splitting of tasks with complexity >4 into subtasks.
+  - Allow combining or marking tasks <4 as OK.
+  - Provide a form for subtasks (title, complexity, due date).
+  - "Next" and "Back" buttons.
+- **Re-Planner Page:**
+  - Show updated monthly mapping including subtasks.
+  - Enable drag-and-drop tasks among months.
+  - Save changes and return to Dashboard.
+- Backend endpoints for split & combine (front end can orchestrate via multiple CRUD calls for now).
+- API endpoint tests (after model/routes stabilize).
+- Auto-generate OpenAPI/Swagger spec for API once endpoints are stable.
+
+---
+
+## Guiding Principles
+- Prioritize progress and iteration over perfection—90% accuracy is the target.
+- Update requirements as the project evolves. 
+
+---
+
+## UI Implementation Tasks and Issues
+
+Based on initial testing, the following issues need to be addressed:
+
+### Current Issues:
+- **Empty Dashboard:** The UI shows all task counts as zero, suggesting either:
+  - The mock data isn't being loaded correctly
+  - The frontend isn't properly connected to the backend
+  - The data isn't being rendered properly in the UI
+- **Missing Features:** Key elements like complexity scores, monthly mapper, and dependency visualization are missing from the UI.
+- **UI Inconsistencies:** There are placeholder texts ("Add New Task Compk") and incomplete elements.
+
+### Recommended Fixes:
+- **Backend Connection Check:**
+  ```javascript
+  // Verify your frontend API calls are pointing to http://localhost:3001
+  // Example fetch in your frontend code:
+  fetch('http://localhost:3001/api/tasks')
+    .then(response => response.json())
+    .then(data => console.log(data)); // Check if mock data appears in console
+  ```
+
+- **Mock Data Verification:**
+  - Check backend for mock data initialization
+  - Ensure the mock data structure includes all required fields:
+  ```javascript
+  {
+    id: 1,
+    title: "Set up project structure",
+    description: "...",
+    status: "pending",
+    priority: "high",
+    complexity: 3,
+    dueDate: "2023-06-15",
+    dependencies: [],
+    subtasks: []
+  }
+  ```
+
+- **UI Component Implementation:**
+  - For the Monthly Mapper, implement grouping tasks by month:
+  ```javascript
+  const monthlyGroups = tasks.reduce((groups, task) => {
+    const month = new Date(task.dueDate).getMonth();
+    if (!groups[month]) groups[month] = [];
+    groups[month].push(task);
+    return groups;
+  }, {});
+  ```
+
+- **Complexity Visualization:**
+  ```jsx
+  <div className="complexity-indicator">
+    {Array.from({length: task.complexity}).map((_, i) => (
+      <span key={i}>★</span>
+    ))}
+  </div>
+  ```
+
+- **Dependency Graph:**
+  ```jsx
+  <ReactFlow nodes={dependencyNodes} edges={dependencyEdges} />
+  ```
+
+### Immediate Steps to Fix:
+- Check browser console for errors (F12 → Console)
+- Verify network requests to backend are successful (F12 → Network)
+- Temporarily hardcode sample tasks in frontend to verify rendering
+- Ensure all required components are properly imported and rendered
+
+### Expected UI Structure:
+```
+[Task Planner Dashboard]
+---------------------------------
+[View Toggles] [Add Task Button]
+
+[Status Summary Cards]
+Pending (5) | In Progress (2) | Completed (3)
+
+[Main Content Area]
+[Table/Card View of Tasks] OR [Monthly Mapper View]
+
+[Task Detail Panel] (when task is selected)
+``` 
+
+---
+
+## Upcoming Features & Enhancements (2024-06)
+
+### 🎨 Frontend/UI Requirements
+- The global header and all action buttons must match the Lovable design system (rounded corners, hover states, primary-blue color).
+- Priority badges must be color-coded: Low (green), Medium (yellow), High (red).
+- The complexity column must use emoji labels: 🟢 Simple, 🟡 Moderate, 🔴 Complex.
+- Due dates must display as colored pills, changing color as deadlines approach, and trigger toast alerts when urgent.
+- Remove the legacy Cards page and replace with a "Completed Tasks" view, grouped by category.
+- The main task table must fetch from GET /tasks and display all columns, including status, priority, complexity, due date, and actions.
+- Implement edit and delete actions in the task table.
+- The "Create New Task" modal must map form fields to POST /tasks, validate inputs, and refresh the table on success.
+- Reserve and render Google Ads slots in the UI.
+- The Dependency Graph view must fetch from /tasks/deps and render a full-screen graph overlay.
+- The Monthly Mapper calendar must display a real month grid, with tasks listed per day and drill-down on click.
+- The "Analyze Workload" button must call /tasks/analyze and display metrics inline.
+- The "Export Task List" button must trigger a download from GET /export/tasks.csv and show a success toast.
+- Populate the UI with realistic example tasks and add helper text per user feedback.
+
+### ⚙️ Backend & Infrastructure Requirements
+- Integrate Google Ads SDK and log ad impressions/clicks for revenue reporting.
+- Set up a deployment pipeline (AWS/GCP/Heroku) with CI/CD for build, test, and deploy.
+- Extend the GET /tasks API to include priority, complexity, dueDate, and status fields.
+- Add GET /tasks/count for dashboard badges.
+- Write a database seeder to populate realistic sample tasks on first run.
+- Build an export endpoint: GET /export/tasks(.csv|.json) streaming all tasks.
+- Add a dependency-graph data endpoint: GET /tasks/deps returning nodes and edges.
+- Add a calendar-view data endpoint: GET /tasks/calendar?month=YYYY-MM grouping tasks by day.
+- Add a workload analysis endpoint: GET /tasks/analyze computing tasksPerDay, avgComplexity, and priority breakdown.
+- Implement an alert scheduler and notification service to check due dates, flip alert statuses, and send notifications. 

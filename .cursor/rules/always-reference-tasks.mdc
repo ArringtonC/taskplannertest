@@ -1,0 +1,13 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+- **Always Reference tasks.md:**
+  - All task-related documentation, updates, and references should point to [tasks.md](mdc:tasks.md)
+  - Ensure any new or updated tasks are reflected in this file
+  - Use this file as the single source of truth for task management
+
+- **Examples:**
+  - When documenting a new task, add it to [tasks.md](mdc:tasks.md)
+  - When referencing a task in other documentation, link to [tasks.md](mdc:tasks.md)

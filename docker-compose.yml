@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: taskplanner-backend
+    restart: unless-stopped
+    ports:
+      - "5001:5000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongo:27017/taskplanner
+      - PORT=5001
+      - CORS_ORIGIN=http://localhost:80,http://localhost:5173,http://localhost:3000
+      - DEBUG=true
+    depends_on:
+      - mongo
+    networks:
+      - taskplanner-network
+
+  frontend:
+    build: ./frontend
+    container_name: taskplanner-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - taskplanner-network
+
+  mongo:
+    image: mongo:6.0
+    container_name: taskplanner-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - taskplanner-network
+
+networks:
+  taskplanner-network:
+    driver: bridge 
+
+volumes:
+  mongo_data:
+
+# To use a specific environment, run:
+#   docker-compose --env-file backend/.env.development up -d --build
+#   docker-compose --env-file backend/.env.staging up -d --build
+#   docker-compose --env-file backend/.env.production up -d --build
+#
+# The backend service will use the environment variables from the specified file.
+#
+# For frontend, use Vite's --mode flag:
+#   npm run build -- --mode development
+#   npm run build -- --mode staging
+#   npm run build -- --mode production 

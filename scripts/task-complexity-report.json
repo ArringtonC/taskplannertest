@@ -1,0 +1,91 @@
+{
+  "meta": {
+    "generatedAt": "2025-05-05T02:19:15.720Z",
+    "tasksAnalyzed": 10,
+    "thresholdScore": 5,
+    "projectName": "Your Project Name",
+    "usedResearch": false
+  },
+  "complexityAnalysis": [
+    {
+      "taskId": 1,
+      "taskTitle": "Set up CI/CD deployment pipeline",
+      "complexityScore": 8,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Break down the CI/CD pipeline setup into specific subtasks covering cloud provider selection, environment configuration, pipeline stages (build, test, deploy), rollback mechanism, and documentation",
+      "reasoning": "This task involves multiple technical decisions (cloud provider selection), configuration of complex systems (CI/CD pipeline with multiple environments), and implementation of critical infrastructure components (automated rollback). It requires expertise in DevOps and cloud services."
+    },
+    {
+      "taskId": 2,
+      "taskTitle": "Extend backend data model and APIs",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the backend data model extension into subtasks covering schema updates, API endpoint modifications, validation rules, backward compatibility testing, and documentation updates",
+      "reasoning": "This task requires modifying the core data model and ensuring backward compatibility, which carries significant risk. It involves database schema changes, API modifications, and validation logic updates across multiple endpoints."
+    },
+    {
+      "taskId": 3,
+      "taskTitle": "Implement database seeder for sample tasks",
+      "complexityScore": 4,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the database seeder implementation into subtasks covering sample data design, seeder script creation, first-run detection logic, and testing with various database states",
+      "reasoning": "This is a relatively straightforward task with moderate complexity. It requires creating realistic sample data and implementing logic to detect first runs, but doesn't involve complex systems integration or high risk components."
+    },
+    {
+      "taskId": 4,
+      "taskTitle": "Enhance task table UI with new fields",
+      "complexityScore": 6,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the task table UI enhancement into subtasks covering API integration, column display implementation, styling of priority/complexity indicators, responsive design adjustments, and action button functionality",
+      "reasoning": "This task involves significant frontend work with multiple UI components (badges, pills, action buttons) and styling requirements. It requires API integration and responsive design considerations, making it moderately complex."
+    },
+    {
+      "taskId": 5,
+      "taskTitle": "Develop task creation and editing functionality",
+      "complexityScore": 7,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Break down the task creation/editing functionality into subtasks covering modal form design, validation logic, API integration for create/update operations, success/error handling, and UI refresh mechanisms",
+      "reasoning": "This task involves complex form handling with validation, API integration for both creation and editing, and state management to refresh the UI after operations. The modal implementation and validation logic add significant complexity."
+    },
+    {
+      "taskId": 6,
+      "taskTitle": "Implement visualization features",
+      "complexityScore": 9,
+      "recommendedSubtasks": 7,
+      "expansionPrompt": "Break down the visualization features into subtasks covering dependency graph API endpoint, graph visualization component, calendar API endpoint, monthly view implementation, drill-down functionality, responsive design, and performance optimization",
+      "reasoning": "This is one of the most complex tasks, requiring implementation of two separate visualization features with their own API endpoints. It involves advanced frontend work with visualization libraries and complex data transformations for both graph and calendar views."
+    },
+    {
+      "taskId": 7,
+      "taskTitle": "Add analytics and export functionality",
+      "complexityScore": 6,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the analytics and export functionality into subtasks covering analytics API endpoint, metrics display UI, CSV export implementation, JSON export implementation, and download mechanism with success notifications",
+      "reasoning": "This task combines two distinct features (analytics and export) with moderate complexity. It requires implementing API endpoints that perform data aggregation and formatting data for export in multiple formats."
+    },
+    {
+      "taskId": 8,
+      "taskTitle": "Integrate Google Ads SDK",
+      "complexityScore": 7,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Break down the Google Ads integration into subtasks covering SDK setup, account configuration, UI slot identification, ad component implementation, tracking mechanism, and toggle functionality for testing",
+      "reasoning": "Integrating third-party advertising SDKs involves working with external systems, handling API keys securely, and implementing tracking. The UI integration and ensuring ads don't disrupt UX adds complexity."
+    },
+    {
+      "taskId": 9,
+      "taskTitle": "Implement notification system for due dates",
+      "complexityScore": 8,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Break down the notification system into subtasks covering background service implementation, due date monitoring logic, alert status updates, UI toast notifications, notification center component, and browser notification integration",
+      "reasoning": "This task requires implementing a background service with scheduling logic, plus multiple notification mechanisms (toasts, notification center, browser notifications). It involves both backend and frontend work with state management across components."
+    },
+    {
+      "taskId": 10,
+      "taskTitle": "Finalize UI polish and helper text",
+      "complexityScore": 5,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the UI polish task into subtasks covering legacy page removal, completed tasks view implementation, helper text addition throughout the app, and comprehensive UI consistency review",
+      "reasoning": "While this task involves work across the entire application, each component is relatively straightforward. The main complexity comes from ensuring consistency across all UI elements and implementing the new Completed Tasks view."
+    }
+  ]
+}

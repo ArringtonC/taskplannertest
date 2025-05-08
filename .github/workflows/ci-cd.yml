@@ -1,0 +1,85 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, staging, develop]
+  pull_request:
+    branches: [main, staging, develop]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deploy environment (development, staging, production)'
+        required: true
+        default: 'development'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [development, staging, production]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Copy backend env file
+        run: |
+          cp backend/.env.${{ matrix.environment }} backend/.env
+
+      - name: Build and test backend
+        run: |
+          cd backend
+          npm run build
+          npm test
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build -- --mode ${{ matrix.environment }}
+          npm test
+
+      - name: Deploy to ${{ matrix.environment }}
+        if: ${{ github.ref == format('refs/heads/{0}', matrix.environment) || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == matrix.environment) }}
+        run: |
+          echo "Deploying to ${{ matrix.environment }}..."
+          # Add your deployment scripts/commands here
+          # For example: ./deploy.sh --env ${{ matrix.environment }}
+
+  promote:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: ${{ startsWith(github.ref, 'refs/heads/staging') || startsWith(github.ref, 'refs/heads/production') }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Promote build
+        run: |
+          echo "Promoting build to ${{ github.ref }}..."
+          # Add promotion logic here (e.g., tag, notify, manual approval)
+
+  rollback:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Rollback to last known good version
+        run: |
+          echo "Rolling back deployment..."
+          # Add your rollback script/command here
+          # For example: ./deploy.sh --rollback 

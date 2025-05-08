@@ -1,0 +1,177 @@
+AI/Cursor Bot Onboarding Guide
+=============================
+
+How to Find This File
+---------------------
+- This file is located at `frontend/history.txt` in the project directory.
+- It contains onboarding instructions, project structure, troubleshooting tips, and a running log of major changes.
+- Always check this file first when joining the project or when onboarding a new AI/bot.
+
+Importance of PRD Files
+-----------------------
+- PRD (Product Requirements Document) files define the high-level requirements, features, and goals for the project.
+- They are typically found in the project root as `PRD.txt`, `PRD-phase2.txt`, or similar.
+- PRD files are the source of truth for generating and updating the project's task structure.
+- Any major new feature or phase should be reflected in a PRD file before implementation begins.
+
+How to Set Up Taskmaster
+------------------------
+1. **Initialize Taskmaster (if not already done):**
+   - Run `task-master init` in the project root to set up Taskmaster's file structure.
+2. **Parse the PRD:**
+   - Use `task-master parse-prd --input='PRD.txt'` (or the relevant PRD file) to generate the initial set of tasks.
+3. **View and manage tasks:**
+   - Use `task-master list` to see all tasks.
+   - Use `task-master show <id>` to view details for a specific task.
+   - Use `task-master next` to see the next actionable task.
+   - Use `task-master expand --id=<id>` to break down complex tasks into subtasks.
+   - Use `task-master set-status --id=<id> --status=done` to mark tasks as complete.
+4. **Keep PRD and tasks in sync:**
+   - Update the PRD and re-parse as needed when requirements change.
+   - Use Taskmaster's update commands to adjust tasks as the project evolves.
+
+For more details, see the Taskmaster documentation or the `.cursor/rules/` directory for workflow rules and command references.
+
+Project Overview
+----------------
+- This is a full-stack Task Planner app with a React/TypeScript frontend (Vite, Tailwind, theme tokens) and a Node.js/Express/MongoDB backend.
+- The frontend uses semantic color tokens, dark mode, and modern UI best practices.
+- The backend provides API endpoints for task management and authentication.
+
+Directory Structure
+-------------------
+- `frontend/` — Main React app. All frontend work and commands are run here.
+- `frontend/src/` — Source code for the React app (components, pages, styles, etc.).
+- `frontend/src/styles/theme/` — Theme tokens and global CSS variables.
+- `frontend/src/pages/` — Main page components.
+- `frontend/src/components/` — Reusable UI components.
+- `frontend/history.txt` — This file, with change history and onboarding info.
+- `backend/` — Node.js/Express/MongoDB backend API. Only needed if working on or running the backend server.
+
+How to Start the Project
+------------------------
+Frontend:
+1. `cd frontend`
+2. `npm install`
+3. `npm run dev`
+4. Open the provided local URL (usually http://localhost:5173)
+
+Backend (if needed):
+1. `cd backend`
+2. `npm install`
+3. `npm run dev`
+4. Backend runs on http://localhost:5001 (or as configured)
+
+Key Conventions & Troubleshooting
+---------------------------------
+- **Theme tokens** are defined in `frontend/src/styles/theme/tokens.css` and must be imported before Tailwind layers.
+- **Tailwind config** is in `frontend/tailwind.config.cjs` and uses semantic color names (e.g., bg-background, text-foreground).
+- **Do not use `@apply` for dynamic CSS variable-based utilities** (like bg-background) in CSS files. Use the class directly in JSX/HTML.
+- **Global body background** is set with plain CSS using theme tokens.
+- **PostCSS config** for Tailwind v4.1+ must use `@tailwindcss/postcss` as the plugin.
+- **If Tailwind utilities are missing:**
+  - Check that the class is in the config and used in content files or safelist.
+  - Restart the dev server after config changes.
+  - Ensure only one version of Tailwind is installed.
+- **Frontend and backend are decoupled**; you can work on one without the other unless API integration is needed.
+
+Recent UI & Build/Debug Change History
+======================================
+
+Project Directory Structure
+--------------------------
+- `frontend/` — The main React app. Run all frontend commands (npm install, npm run dev) from this directory.
+- `frontend/src/` — All source code for the React app (components, pages, styles, etc.).
+- `frontend/src/styles/theme/` — Theme tokens and global CSS variables.
+- `frontend/src/pages/` — Main page components (e.g., Dashboard, MonthlyMapper).
+- `frontend/src/components/` — Reusable UI components.
+- `frontend/history.txt` — This file, documenting changes and onboarding info.
+- `backend/` — The Node.js/Express/MongoDB backend API. Only needed if you are working on or running the backend server.
+
+If you are only working on the frontend, you do not need to start or modify anything in the backend, infra, or other directories. Always run `npm install` and `npm run dev` from the `frontend/` directory unless otherwise specified.
+
+How to Start the Backend (if needed)
+------------------------------------
+1. Open a new terminal and navigate to the backend directory:
+   cd ../backend
+2. Install dependencies:
+   npm install
+3. Start the backend server:
+   npm run dev
+   (or use the appropriate start script defined in backend/package.json)
+
+The backend will typically run on http://localhost:5001 or a similar port, and the frontend is configured to proxy API requests to it.
+
+How to Start the Application
+----------------------------
+1. Install dependencies:
+   npm install
+2. Start the development server:
+   npm run dev
+3. Open your browser to the local URL provided (usually http://localhost:5173 or similar).
+
+Summary of Error Fixes
+----------------------
+- Fixed Tailwind config and PostCSS plugin setup for compatibility with Tailwind v4.1+.
+- Ensured theme tokens (CSS variables) are loaded before Tailwind layers.
+- Removed unsupported @apply usage for dynamic CSS variable-based utilities.
+- Used plain CSS for global body background and text color.
+- Cleaned up the UI by removing test/demo elements and unnecessary navigation.
+- Verified that all Tailwind utilities and theme tokens work as intended.
+
+Current State for New Users
+---------------------------
+- The app uses a modern theme system with CSS variables and Tailwind for all backgrounds and text colors.
+- The UI is clean, minimal, and ready for further development.
+- All build and runtime errors related to Tailwind, PostCSS, and theme tokens have been resolved.
+- You can use Tailwind classes like bg-background and text-foreground directly in your JSX/HTML.
+- For global styles, use plain CSS with the theme tokens (see tokens.css).
+- The project is ready for new features, further UI work, or deployment.
+
+1. Integrated theme tokens and Tailwind for background and text colors.
+2. Fixed Tailwind config and ensured bg-background/text-foreground classes are generated.
+3. Debugged Tailwind CLI issues, npm install problems, and PostCSS plugin changes for Tailwind v4.1+.
+4. Updated PostCSS config to use @tailwindcss/postcss for Tailwind v4.1+ compatibility.
+5. Removed @apply bg-background from CSS and set body background using CSS variables directly.
+6. Cleaned up the UI:
+   - Removed the "Does this go white?" test box and text.
+   - Removed the main navigation headers at the top of the app.
+   - Removed the test button from the Dashboard page.
+   - Removed the tab bar separator (<hr>) from the Dashboard page.
+   - Removed Table and Cards view toggle buttons from the Dashboard page.
+7. Ensured all changes were tested and confirmed to work as intended.
+
+This file documents the major UI and build/debug changes made during the session for future reference.
+
+---
+
+Page-by-Page UI Color & Structure Checklist
+===========================================
+
+**Dashboard Page**
+- [ ] Change "Add Task", "Table View", and "Cards View" buttons to #253858 with white text
+- [ ] Ensure footer action buttons use correct color
+- [ ] Add <hr class="border-t border-[#2A3044] my-6" /> between main sections if not present
+
+**TaskList Component (Table & Grid)**
+- [ ] Update all table/grid borders and dividers to #2A3044
+- [ ] Ensure table uses full grid borders (1px solid #2A3044 on all cells)
+- [ ] Ensure toggle buttons use #253858 with white text
+- [ ] Replace any use of #F9FAFB with #F1F5F9 for table header text and accents
+
+**TaskRow & TaskCard Components**
+- [ ] Replace badge components with dot indicators for status/complexity
+- [ ] Add "Very Complex" (Level 8, #EF4444) to complexity indicator
+- [ ] Change card header backgrounds to #253858 with white text
+
+**PriorityBadge, ComplexityBadge, StatusBadge, DotIndicator Components**
+- [ ] Implement DotIndicator component for complexity/status
+- [ ] Use correct hues for Levels 6–8
+- [ ] Add "Very Complex" option for Level 8
+
+**General/Global**
+- [ ] Audit and document all color usages on the task page
+- [ ] Fix/document any outliers or mismatches
+- [ ] Ensure all borders, backgrounds, and text colors match the new scale
+
+--- 
