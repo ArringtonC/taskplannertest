@@ -1,7 +1,7 @@
+
 import React, { useEffect } from "react";
-import { Task } from "../context/taskState";
+import { Task } from "@/types/task";
 import { format, isSameMonth } from "date-fns";
-import { Button } from "@/components/ui/button";
 
 interface TaskCardsProps {
   tasks: Task[];
@@ -77,8 +77,8 @@ export default function TaskCards({ tasks, onEdit, onDelete }: TaskCardsProps) {
   // Sort tasks by priority and then by due date
   const sortedTasks = [...currentMonthTasks].sort((a, b) => {
     const priorityOrder = { high: 0, medium: 1, low: 2 };
-    const aPriority = priorityOrder[a.priority.toLowerCase() as 'high' | 'medium' | 'low'] ?? 3;
-    const bPriority = priorityOrder[b.priority.toLowerCase() as 'high' | 'medium' | 'low'] ?? 3;
+    const aPriority = priorityOrder[a.priority.toLowerCase()] || 3;
+    const bPriority = priorityOrder[b.priority.toLowerCase()] || 3;
     
     if (aPriority !== bPriority) return aPriority - bPriority;
     
@@ -111,7 +111,7 @@ export default function TaskCards({ tasks, onEdit, onDelete }: TaskCardsProps) {
       )}
       
       {sortedTasks.map((task, index) => (
-        <React.Fragment key={task._id}>
+        <React.Fragment key={task.id}>
           {/* Insert an ad after every 3 tasks */}
           {index > 0 && index % 3 === 0 && (
             <div className="w-full my-2 bg-gray-800 p-2 flex justify-center">
@@ -127,22 +127,18 @@ export default function TaskCards({ tasks, onEdit, onDelete }: TaskCardsProps) {
           )}
           
           <div 
-            className={`w-full mb-1 p-4 ${getStatusColor(task.status)} ${getPriorityColor(task.priority)} hover:opacity-90 transition-opacity rounded-lg`}
+            className={`w-full mb-1 p-4 ${getStatusColor(task.status)} ${getPriorityColor(task.priority)} hover:opacity-90 cursor-pointer transition-opacity`}
+            onClick={() => onEdit(task.id)}
           >
             <div className="flex justify-between items-center">
               <div className="font-medium">{task.title}</div>
-              <div className="flex space-x-2 items-center">
+              <div className="flex space-x-2">
+                {task.complexity?.emoji}
                 {task.dueDate && (
                   <span className="text-sm text-gray-700">
                     {task.dueDate}
                   </span>
                 )}
-                <Button variant="outline" size="sm" onClick={() => onEdit(task._id)}>
-                  Edit
-                </Button>
-                <Button variant="destructive" size="sm" onClick={() => onDelete(task._id)}>
-                  Delete
-                </Button>
               </div>
             </div>
           </div>

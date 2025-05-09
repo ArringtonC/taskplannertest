@@ -1,12 +1,10 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
+import { Navigate } from 'react-router-dom';
 
-interface ProtectedRouteProps {
-  children: ReactNode;
-}
-
-// DEV ONLY: Bypass auth for local development and preview
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
   return <>{children}</>;
-};
-
-export default ProtectedRoute;
+} 

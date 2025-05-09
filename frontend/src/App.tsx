@@ -1,21 +1,15 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { TaskProvider } from './context/TaskContext';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import { ThemeProvider } from './components/ThemeProvider';
 import React, { useEffect } from 'react';
-
-// Import pages
-import Dashboard from './pages/Dashboard';
-import MonthlyMapper from './pages/MonthlyMapper';
-import DependencyGraph from './pages/DependencyGraph';
-import AddTaskPage from './pages/AddTaskPage';
-import LoginPage from './pages/LoginPage';
-import TaskPlannerDashboard from './pages/TaskPlannerDashboard';
-import EditTaskPage from './pages/EditTaskPage';
-
-// Import components
 import ProtectedRoute from './components/ProtectedRoute';
+
+import Dashboard from './pages/Dashboard';
+import Login from './pages/Login';
+import Index from './pages/Index';
+import MonthlyMapper from './pages/MonthlyMapper';
+import YearlyMapper from './pages/YearlyMapper';
+import WorkloadAnalysis from './pages/WorkloadAnalysis';
 
 // Debug logger for theme variables and container classes
 function ThemeDebugLogger() {
@@ -81,79 +75,22 @@ function ThemeDebugPanel() {
 }
 
 function App() {
-  console.log('App component rendering');
-
   return (
     <ThemeProvider>
-    <AuthProvider>
-      <TaskProvider>
         <Router>
             <div className="min-h-screen bg-background text-foreground app-container" data-testid="app-container">
               <ThemeDebugLogger />
               <ThemeDebugPanel />
             <Routes>
-              {/* Public routes */}
-              <Route path="/login" element={<LoginPage />} />
-
-              {/* Protected routes */}
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/add-task"
-                element={
-                  <ProtectedRoute>
-                    <AddTaskPage />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/monthly"
-                element={
-                  <ProtectedRoute>
-                    <MonthlyMapper />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/dependencies"
-                element={
-                  <ProtectedRoute>
-                    <DependencyGraph />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/task-planner-dashboard"
-                element={
-                  <ProtectedRoute>
-                    <TaskPlannerDashboard />
-                  </ProtectedRoute>
-                }
-              />
-
-                <Route
-                  path="/edit-task/:id"
-                  element={
-                    <ProtectedRoute>
-                      <EditTaskPage />
-                    </ProtectedRoute>
-                  }
-                />
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/monthly-mapper" element={<ProtectedRoute><MonthlyMapper /></ProtectedRoute>} />
+            <Route path="/yearly-mapper" element={<ProtectedRoute><YearlyMapper /></ProtectedRoute>} />
+            <Route path="/analyze-workload" element={<ProtectedRoute><WorkloadAnalysis /></ProtectedRoute>} />
             </Routes>
           </div>
         </Router>
-      </TaskProvider>
-    </AuthProvider>
     </ThemeProvider>
   );
 }

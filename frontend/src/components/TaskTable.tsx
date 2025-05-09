@@ -1,123 +1,131 @@
-import React from 'react';
+import React from "react";
+import { Task } from "@/types/task";
+import { Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-// Define the Task interface
-interface Task {
-  _id: string;
-  title: string;
-  status: string;
-  priority: string;
-  complexity: string;
-  dueDate: string | null;
-}
+import { Badge } from "@/components/ui/badge";
 
 interface TaskTableProps {
   tasks: Task[];
-  onEdit: (task: Task) => void;
+  onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
-const TaskTable: React.FC<TaskTableProps> = ({ tasks, onEdit, onDelete }) => {
-  // Helper function to get status badge styling
-  const getStatusBadge = (status: string) => {
-    const statusLower = status.toLowerCase();
-    
-    if (statusLower === 'pending') {
-      return <span className="px-3 py-1 bg-yellow-500 text-foreground rounded-full">Pending</span>;
-    } else if (statusLower === 'in-progress' || statusLower === 'in progress') {
-      return <span className="px-3 py-1 bg-blue-500 text-foreground rounded-full">In-Progress</span>;
-    } else if (statusLower === 'completed') {
-      return <span className="px-3 py-1 bg-green-500 text-foreground rounded-full">Completed</span>;
+export default function TaskTable({ tasks, onEdit, onDelete }: TaskTableProps) {
+  console.log('TaskTable tasks:', tasks);
+
+  const getStatusColor = (status: string | undefined) => {
+    if (!status) return "bg-gray-500";
+    switch (status.toLowerCase()) {
+      case "pending":
+        return "bg-yellow-500";
+      case "in-progress":
+        return "bg-blue-500";
+      case "completed":
+        return "bg-green-500";
+      default:
+        return "bg-gray-500";
     }
-    
-    return <span className="px-3 py-1 bg-gray-500 text-foreground rounded-full">{status}</span>;
   };
-  
-  // Helper function to get priority badge styling
-  const getPriorityBadge = (priority: string) => {
-    const priorityLower = priority.toLowerCase();
-    
-    if (priorityLower === 'high') {
-      return <span className="px-3 py-1 bg-red-500 text-foreground rounded-full">High</span>;
-    } else if (priorityLower === 'medium') {
-      return <span className="px-3 py-1 bg-yellow-500 text-foreground rounded-full">Medium</span>;
-    } else if (priorityLower === 'low') {
-      return <span className="px-3 py-1 bg-green-500 text-foreground rounded-full">Low</span>;
+
+  const getPriorityColor = (priority: string | undefined) => {
+    if (!priority) return "bg-gray-500";
+    switch (priority.toLowerCase()) {
+      case "high":
+        return "bg-red-500";
+      case "medium":
+        return "bg-yellow-500";
+      case "low":
+        return "bg-green-500";
+      default:
+        return "bg-gray-500";
     }
-    
-    return <span className="px-3 py-1 bg-gray-500 text-foreground rounded-full">{priority}</span>;
   };
-  
-  // Helper function to get complexity styling with emoji
-  const getComplexityDisplay = (complexity: string) => {
-    const complexityLower = complexity.toLowerCase();
+
+  const getDueDateColor = (dueDate: string | null) => {
+    if (!dueDate) return "";
     
-    if (complexityLower === 'complex') {
-      return <span className="text-red-500">🔴 Complex</span>;
-    } else if (complexityLower === 'moderate') {
-      return <span className="text-yellow-500">🟡 Moderate</span>;
-    } else if (complexityLower === 'simple') {
-      return <span className="text-green-500">🟢 Simple</span>;
-    }
+    const due = new Date(dueDate);
+    const today = new Date();
+    const diffDays = Math.ceil((due.getTime() - today.getTime()) / (1000 * 3600 * 24));
     
-    return <span>{complexity}</span>;
-  };
-  
-  // Helper function to get due date display
-  const getDueDateDisplay = (dueDate: string | null) => {
-    if (!dueDate) {
-      return <span className="text-gray-400">Not set</span>;
-    }
-    
-    return <span className="text-green-500">{dueDate}</span>;
+    if (diffDays < 0) return "bg-gray-500"; // Past due
+    if (diffDays <= 3) return "bg-red-500 animate-pulse"; // 3 days or less
+    if (diffDays <= 7) return "bg-yellow-500"; // 7 days or less
+    return "bg-green-500"; // More than 7 days
   };
 
   return (
     <div className="w-full overflow-x-auto">
-      <table className="w-full">
+      <table className="w-full text-left">
         <thead>
-          <tr className="border-b border-border">
-            <th className="py-2 px-4 text-left">TITLE</th>
-            <th className="py-2 px-4 text-left">STATUS</th>
-            <th className="py-2 px-4 text-left">PRIORITY</th>
-            <th className="py-2 px-4 text-left">COMPLEXITY</th>
-            <th className="py-2 px-4 text-left">DUE DATE</th>
-            <th className="py-2 px-4 text-right">ACTIONS</th>
+          <tr className="border-b border-gray-700">
+            <th className="py-4 px-2 text-gray-200 font-semibold tracking-wide">TITLE</th>
+            <th className="py-4 px-2 text-gray-200 font-semibold tracking-wide">STATUS</th>
+            <th className="py-4 px-2 text-gray-200 font-semibold tracking-wide">PRIORITY</th>
+            <th className="py-4 px-2 text-gray-200 font-semibold tracking-wide">COMPLEXITY</th>
+            <th className="py-4 px-2 text-gray-200 font-semibold tracking-wide">DUE DATE</th>
+            <th className="py-4 px-2 text-gray-200 font-semibold tracking-wide">ACTIONS</th>
           </tr>
         </thead>
         <tbody>
           {tasks.map((task) => (
-            <tr key={task._id} className="border-t border-border" data-testid="task-table-row">
-              <td className="py-4 px-4">{task.title}</td>
-              <td className="py-4 px-4">{getStatusBadge(task.status)}</td>
-              <td className="py-4 px-4">{getPriorityBadge(task.priority)}</td>
-              <td className="py-4 px-4">{getComplexityDisplay(task.complexity)}</td>
-              <td className="py-4 px-4">{getDueDateDisplay(task.dueDate)}</td>
-              <td className="py-4 px-4 text-right">
-                <div className="flex justify-end space-x-4">
-                  <Button 
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center"
-                    onClick={() => onEdit(task)}
-                  >
-                    <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-                    </svg>
-                    Edit
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center"
-                    onClick={() => onDelete(task._id)}
-                  >
-                    <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                    </svg>
-                    Delete
-                  </Button>
-                </div>
+            <tr key={task.id} className="border-b border-gray-800">
+              <td className="py-4 px-2 text-white">{task.title || '(No Title)'}</td>
+              <td className="py-4 px-2">
+                <span className={`inline-block px-2 py-1 rounded-md text-white text-xs ${getStatusColor(task.status)}`}>
+                  {task.status}
+                </span>
+              </td>
+              <td className="py-4 px-2">
+                <span className={`inline-block px-2 py-1 rounded-md text-white text-xs ${getPriorityColor(task.priority)}`}>
+                  {task.priority === "high" ? "🔴 High" : 
+                   task.priority === "medium" ? "🟡 Medium" : 
+                   task.priority === "low" ? "🟢 Low" : task.priority}
+                </span>
+              </td>
+              <td className="py-4 px-2 text-white">
+                {typeof task.complexity === 'object' && task.complexity !== null ? (
+                  <>
+                    {task.complexity.emoji} {task.complexity.level}
+                  </>
+                ) : typeof task.complexity === 'string' ? (
+                  <>
+                    {task.complexity === 'simple' && '🟢 Simple'}
+                    {task.complexity === 'moderate' && '🟡 Moderate'}
+                    {task.complexity === 'complex' && '🔴 Complex'}
+                    {!(task.complexity === 'simple' || task.complexity === 'moderate' || task.complexity === 'complex') && 'Unknown'}
+                  </>
+                ) : (
+                  'Unknown'
+                )}
+              </td>
+              <td className="py-4 px-2 text-white">
+                {task.dueDate ? (
+                  <span className={`flex items-center gap-2`}>
+                    <span className={`inline-block w-3 h-3 rounded-full ${getDueDateColor(task.dueDate)}`}></span>
+                    {new Date(task.dueDate).toLocaleDateString()}
+                  </span>
+                ) : "Not set"}
+              </td>
+              <td className="py-4 px-2 flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => onEdit(task.id)}
+                  className="bg-transparent border-gray-700 text-white hover:bg-gray-700"
+                >
+                  <Edit className="h-4 w-4 mr-1" />
+                  Edit
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => onDelete(task.id)}
+                  className="bg-transparent border-gray-700 text-white hover:bg-gray-700"
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Delete
+                </Button>
               </td>
             </tr>
           ))}
@@ -125,6 +133,4 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks, onEdit, onDelete }) => {
       </table>
     </div>
   );
-};
-
-export default TaskTable; 
+}

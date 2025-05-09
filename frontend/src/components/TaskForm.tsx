@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Task } from "../context/taskState";
+import React, { useState, useEffect, useRef } from "react";
+import { Task } from "@/types/task";
 import { 
   Dialog, 
   DialogContent, 
@@ -11,23 +11,23 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui_copy/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import {
   RadioGroup,
   RadioGroupItem
-} from "@/components/ui_copy/radio-group";
+} from "@/components/ui/radio-group";
 
 export interface TaskFormData {
   title: string;
   status: Task["status"];
   priority: Task["priority"];
-  complexity: number;
+  complexity: string; // string: 'simple', 'moderate', or 'complex'
   dueDate?: string;
 }
 
@@ -36,33 +36,95 @@ interface TaskFormProps {
   onClose: () => void;
   onSave: (task: TaskFormData) => void;
   editingTask?: Task;
+  allTasks: Task[];
+  dialogClassName?: string;
 }
 
-export default function TaskForm({ isOpen, onClose, onSave, editingTask }: TaskFormProps) {
+export default function TaskForm({ isOpen, onClose, onSave, editingTask, allTasks, dialogClassName }: TaskFormProps) {
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState("pending");
   const [priority, setPriority] = useState("medium");
-  const [complexityScore, setComplexityScore] = useState("3");
+  const [complexity, setComplexity] = useState("moderate");
   const [dueDate, setDueDate] = useState("");
+
+  // Validation and loading states
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [loading, setLoading] = useState(false);
+
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (editingTask) {
       setTitle(editingTask.title);
       setStatus(editingTask.status);
       setPriority(editingTask.priority);
-      setComplexityScore(editingTask.complexity.toString());
-      setDueDate(editingTask.dueDate || "");
+      let comp = editingTask.complexity;
+      if (typeof comp === 'string') {
+        setComplexity(comp);
+      } else if (typeof comp === 'number') {
+        setComplexity(
+          comp <= 2 ? 'simple' : comp <= 5 ? 'moderate' : 'complex'
+        );
+      } else if (typeof comp === 'object' && comp !== null && 'score' in comp && typeof comp.score === 'number') {
+        const score = comp.score;
+        setComplexity(
+          score <= 2 ? 'simple' : score <= 5 ? 'moderate' : 'complex'
+        );
+      } else {
+        setComplexity('moderate');
+      }
+      setDueDate(editingTask.dueDate ? editingTask.dueDate.slice(0, 10) : "");
     } else {
       resetForm();
     }
+    setErrors({});
+    setLoading(false);
   }, [editingTask, isOpen]);
+
+  useEffect(() => {
+    if (!title.trim()) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      const duplicate = allTasks.some(
+        t =>
+          t &&
+          typeof t.title === 'string' &&
+          t.title.trim().toLowerCase() === title.trim().toLowerCase() &&
+          (!editingTask || t.id !== editingTask.id)
+      );
+      setErrors(prev => ({ ...prev, title: duplicate ? "A task with this title already exists." : "" }));
+    }, 300);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [title, allTasks, editingTask]);
 
   const resetForm = () => {
     setTitle("");
     setStatus("pending");
     setPriority("medium");
-    setComplexityScore("3");
+    setComplexity("moderate");
     setDueDate("");
+  };
+
+  // Validation logic
+  const validate = () => {
+    const newErrors: { [key: string]: string } = {};
+    if (!title.trim()) newErrors.title = "Title is required.";
+    const duplicate = allTasks.some(
+      t =>
+        t &&
+        typeof t.title === 'string' &&
+        t.title.trim().toLowerCase() === title.trim().toLowerCase() &&
+        (!editingTask || t.id !== editingTask.id)
+    );
+    if (duplicate) newErrors.title = "A task with this title already exists.";
+    if (!status) newErrors.status = "Status is required.";
+    if (!priority) newErrors.priority = "Priority is required.";
+    if (!complexity || !['simple', 'moderate', 'complex'].includes(complexity)) newErrors.complexity = "Complexity must be simple, moderate, or complex.";
+    if (dueDate && isNaN(Date.parse(dueDate))) newErrors.dueDate = "Due date is invalid.";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const getComplexityLevel = (score: number) => {
@@ -77,142 +139,134 @@ export default function TaskForm({ isOpen, onClose, onSave, editingTask }: TaskF
     return "🔴";
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const scoreNum = parseInt(complexityScore, 10);
+    if (!validate()) return;
+    setLoading(true);
     const newTask: TaskFormData = {
       title,
       status: status as Task["status"],
       priority: priority as Task["priority"],
-      complexity: scoreNum,
-      dueDate: dueDate || undefined
+      complexity, // string: 'simple', 'moderate', or 'complex'
+      dueDate: dueDate || undefined // already yyyy-MM-dd
     };
-    onSave(newTask);
-    onClose();
+    if (editingTask) {
+      console.log('Submitting edit taskData:', newTask);
+    }
+    console.log('TaskForm dueDate before submit:', dueDate);
+    console.log('TaskForm newTask:', newTask);
+    console.log('Submitting newTask payload:', newTask);
+    try {
+      await onSave(newTask);
+      setLoading(false);
+      onClose();
+    } catch (err) {
+      setLoading(false);
+      setErrors({ form: "Failed to save task. Please try again." });
+    }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-gray-800 text-white border-gray-700">
+      <DialogContent className={`bg-[#1a2133] text-white border-none ${dialogClassName ? dialogClassName : 'sm:max-w-md w-full max-w-[95vw] max-h-[85vh] overflow-y-auto'}`}>
         <DialogHeader>
-          <DialogTitle>{editingTask ? "Edit Task" : "Create New Task"}</DialogTitle>
-          <DialogDescription className="text-gray-400">
-            Fill in the details for your task below.
-          </DialogDescription>
+          <DialogTitle className="text-2xl font-bold text-center mb-2">{editingTask ? "Edit Task" : "Create New Task"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Task title"
-                className="bg-gray-700 border-gray-600"
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="status">Status</Label>
-              <Select value={status} onValueChange={(value) => setStatus(value)}>
-                <SelectTrigger className="bg-gray-700 border-gray-600">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-700 border-gray-600">
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="priority">Priority</Label>
-              <RadioGroup 
-                value={priority} 
-                onValueChange={setPriority}
-                className="flex space-x-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="low" id="priority-low" />
-                  <Label htmlFor="priority-low" className="flex items-center">
-                    <span className="inline-block w-3 h-3 rounded-full bg-green-500 mr-2"></span>
-                    🟢 Low
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="medium" id="priority-medium" />
-                  <Label htmlFor="priority-medium" className="flex items-center">
-                    <span className="inline-block w-3 h-3 rounded-full bg-yellow-500 mr-2"></span>
-                    🟡 Medium
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="high" id="priority-high" />
-                  <Label htmlFor="priority-high" className="flex items-center">
-                    <span className="inline-block w-3 h-3 rounded-full bg-red-500 mr-2"></span>
-                    🔴 High
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-            <div className="grid gap-2">
-              <Label>Complexity</Label>
-              <RadioGroup 
-                value={complexityScore} 
-                onValueChange={setComplexityScore} 
-                className="grid grid-cols-3 gap-2"
-              >
-                <div className="flex flex-col items-center p-2 border border-gray-600 rounded-md cursor-pointer hover:bg-gray-700 transition-colors">
-                  <RadioGroupItem value="1" id="complexity-1" className="sr-only" />
-                  <Label htmlFor="complexity-1" className="flex flex-col items-center cursor-pointer">
-                    <span className="text-2xl">🟢</span>
-                    <span>Simple</span>
-                  </Label>
-                </div>
-                <div className="flex flex-col items-center p-2 border border-gray-600 rounded-md cursor-pointer hover:bg-gray-700 transition-colors">
-                  <RadioGroupItem value="4" id="complexity-4" className="sr-only" />
-                  <Label htmlFor="complexity-4" className="flex flex-col items-center cursor-pointer">
-                    <span className="text-2xl">🟡</span>
-                    <span>Moderate</span>
-                  </Label>
-                </div>
-                <div className="flex flex-col items-center p-2 border border-gray-600 rounded-md cursor-pointer hover:bg-gray-700 transition-colors">
-                  <RadioGroupItem value="7" id="complexity-7" className="sr-only" />
-                  <Label htmlFor="complexity-7" className="flex flex-col items-center cursor-pointer">
-                    <span className="text-2xl">🔴</span>
-                    <span>Complex</span>
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="dueDate">Due Date</Label>
-              <Input
-                id="dueDate"
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="bg-gray-700 border-gray-600"
-              />
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-6 py-2">
+          {/* Title */}
+          <div className="space-y-1">
+            <Label htmlFor="title">Task Title</Label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="bg-[#0f1421] border-gray-700 h-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full"
+              placeholder="Enter task title"
+            />
+            {errors.title && <span className="text-red-400 text-sm block mt-1">{errors.title}</span>}
           </div>
+          {/* Status */}
+          <div className="space-y-1">
+            <Label htmlFor="status">Status</Label>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger className="bg-[#0f1421] border-gray-700 h-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1a2133] border-gray-700">
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="in-progress">In Progress</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+                <SelectItem value="deferred">Deferred</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.status && <span className="text-red-400 text-sm block mt-1">{errors.status}</span>}
+          </div>
+          {/* Priority */}
+          <div className="space-y-1">
+            <Label htmlFor="priority">Priority</Label>
+            <Select value={priority} onValueChange={setPriority}>
+              <SelectTrigger className="bg-[#0f1421] border-gray-700 h-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full">
+                <SelectValue placeholder="Select priority" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1a2133] border-gray-700">
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.priority && <span className="text-red-400 text-sm block mt-1">{errors.priority}</span>}
+          </div>
+          {/* Complexity */}
+          <div className="space-y-1">
+            <Label htmlFor="complexity">Complexity</Label>
+            <Select value={complexity} onValueChange={setComplexity}>
+              <SelectTrigger className="bg-[#0f1421] border-gray-700 h-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full">
+                <SelectValue placeholder="Select complexity" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1a2133] border-gray-700">
+                <SelectItem value="simple">Simple</SelectItem>
+                <SelectItem value="moderate">Moderate</SelectItem>
+                <SelectItem value="complex">Complex</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.complexity && <span className="text-red-400 text-sm block mt-1">{errors.complexity}</span>}
+          </div>
+          {/* Due Date */}
+          <div className="space-y-1">
+            <Label htmlFor="dueDate">Due Date</Label>
+            <Input
+              id="dueDate"
+              type="date"
+              placeholder="MM/DD/YYYY"
+              value={dueDate ? dueDate.slice(0, 10) : ""}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="bg-[#0f1421] border-gray-700 h-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full"
+            />
+            {errors.dueDate && <span className="text-red-400 text-sm block mt-1">{errors.dueDate}</span>}
+          </div>
+          <hr className="my-4 border-gray-700" />
           <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={onClose}
-              className="bg-transparent border-gray-600 hover:bg-gray-700"
-            >
-              Cancel
-            </Button>
-            <Button 
-              type="submit"
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {editingTask ? "Update Task" : "Create Task"}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-end w-full">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="bg-transparent border-gray-500 hover:bg-gray-800 w-full sm:w-auto"
+                disabled={loading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+                disabled={loading}
+              >
+                {loading ? "Saving..." : editingTask ? "Update Task" : "Create Task"}
+              </Button>
+            </div>
           </DialogFooter>
+          {errors.form && <div className="text-red-400 text-center mt-2">{errors.form}</div>}
         </form>
       </DialogContent>
     </Dialog>
