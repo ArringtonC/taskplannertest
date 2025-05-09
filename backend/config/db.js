@@ -18,30 +18,7 @@ const mockDB = {
     }
   ],
   projects: [],
-  tasks: [
-    {
-      _id: 'sample1',
-      title: 'Sample Task 1',
-      status: 'pending',
-      priority: 'medium',
-      complexity: 3,
-      dueDate: '2025-05-31',
-      createdBy: 'admin123',
-      dependencies: [],
-      subtasks: []
-    },
-    {
-      _id: 'sample2',
-      title: 'Sample Task 2',
-      status: 'in-progress',
-      priority: 'high',
-      complexity: 5,
-      dueDate: '2025-06-15',
-      createdBy: 'admin123',
-      dependencies: [],
-      subtasks: []
-    }
-  ],
+  tasks: [],
   isConnected: true,
   connection: {
     host: 'mock-database'

@@ -43,7 +43,7 @@ const mockTaskOperations = {
   
   createTask: (taskData, userId) => {
     const newTask = {
-      _id: `task_${Date.now()}`, // Generate a unique ID
+      _id: new mongoose.Types.ObjectId().toString(), // Correctly instantiate ObjectId
       ...taskData,
       createdBy: userId,
       createdAt: new Date().toISOString(),
@@ -341,7 +341,9 @@ export const createTask = async (req, res) => {
   } catch (error) {
     // Log error for debugging
     console.error('Error creating task:', error);
-    
+    if (error.errors) {
+      console.error('Validation errors:', error.errors);
+    }
     // Specialized handling for validation errors
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(val => val.message);
@@ -351,7 +353,6 @@ export const createTask = async (req, res) => {
         errors: messages
       });
     }
-    
     // Generic error response for other types of errors
     res.status(500).json({
       success: false,

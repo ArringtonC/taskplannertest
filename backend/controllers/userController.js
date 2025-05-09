@@ -129,31 +129,32 @@ export const registerUser = async (req, res) => {
 // @route   POST /api/users/login
 // @access  Public
 export const loginUser = async (req, res) => {
+  console.log('loginUser called with:', req.body); // Log the incoming request
   try {
     const { email, password } = req.body;
 
     // Check if using mock DB
     if (isUsingMockDB()) {
       console.log('Using mock DB for user login');
-      
-      // Check for user email in mock DB
       const user = mockOperations.findOne({ email });
       if (!user) {
+        console.log('Mock login failed: user not found');
         return res.status(401).json({
           success: false,
           message: 'Invalid credentials',
         });
       }
 
-      // Check if password matches
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
+        console.log('Mock login failed: password mismatch');
         return res.status(401).json({
           success: false,
           message: 'Invalid credentials',
         });
       }
 
+      console.log('Mock login success:', user.email);
       res.json({
         success: true,
         user: {
@@ -168,24 +169,25 @@ export const loginUser = async (req, res) => {
     }
 
     // Regular MongoDB flow
-    // Check for user email
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
+      console.log('Mongo login failed: user not found');
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials',
       });
     }
 
-    // Check if password matches
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      console.log('Mongo login failed: password mismatch');
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials',
       });
     }
 
+    console.log('Mongo login success:', user.email);
     res.json({
       success: true,
       user: {
@@ -197,7 +199,7 @@ export const loginUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error(error);
+    console.error('loginUser error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',
